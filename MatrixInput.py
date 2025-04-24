@@ -1,3 +1,9 @@
+"""
+
+Old version, used to get the matrix using a screenshot and OCR.
+
+"""
+
 import os
 import cv2
 import numpy as np
