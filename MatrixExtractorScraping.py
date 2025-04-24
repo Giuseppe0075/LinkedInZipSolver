@@ -20,16 +20,16 @@ class Node:
 
 def extract_matrix_fast():
     """
-    Avvia il browser, naviga al gioco, clicca "Avvia gioco" e restituisce il driver e la matrice veloce.
+    Starts a Chrome WebDriver instance and navigates to the LinkedIn Zip game, extracts the game matrix,
     """
-    # Percorso al tuo profilo utente di Chrome
+    # Uncomment the following lines to use a specific user profile
     # user_profile_path = os.path.expanduser("~\\AppData\\Local\\Google\\Chrome\\User Data")
-
     options = webdriver.ChromeOptions()
+
     # options.add_argument(f"--user-data-dir={user_profile_path}")
     # options.add_argument("--profile-directory=Default")
     driver = webdriver.Chrome(options=options)
-    # Carica il gioco e attendi iframe
+    # Go to LinkedIn Zip game
     driver.get("https://www.linkedin.com/games/zip")
 
     WebDriverWait(driver, 20).until(
@@ -38,7 +38,7 @@ def extract_matrix_fast():
     driver.maximize_window()
     iframe = driver.find_element(By.TAG_NAME, "iframe")
     driver.switch_to.frame(iframe)
-    # Clicca "Avvia gioco"
+    # Wait for the game to load
     print("Waiting for game...")
     wait = WebDriverWait(driver, 20)
     button = wait.until(
@@ -48,12 +48,12 @@ def extract_matrix_fast():
     print("Pressing 'Start Game'...")
     button.click()
 
-    # Attendi la griglia
+    # Wait for the grid to load
     WebDriverWait(driver, 15).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, ".trail-cell"))
     )
 
-    # Estrai dati in un solo round-trip JS
+    # Extract data from the grid
     cells_info = driver.execute_script("""
         return Array.from(document.querySelectorAll(".trail-cell")).map(cell => {
             const cls = cell.className;
@@ -68,7 +68,7 @@ def extract_matrix_fast():
         });
     """)
 
-    # Ricostruisci la matrice Python
+    # Recreate the matrix
     n = int(len(cells_info) ** 0.5)
     matrix = []
     start_i = start_j = 0
@@ -87,5 +87,5 @@ def extract_matrix_fast():
 if __name__ == "__main__":
     driver, matrix, start_i, start_j, n = extract_matrix_fast()
     print([[node.value for node in row] for row in matrix])
-    input("Premi Invio per chiudere il browser...")
+    input("Press Enter to close the browser...")
     driver.quit()
