@@ -67,8 +67,7 @@ class LinkedInZipSolver:
     def solve_puzzle(self):
         # Click arrows to solve the puzzle
         self.driver.switch_to.window(self.driver.current_window_handle)
-        for arrow in self.path:
-            pyautogui.press(arrow)
+        pyautogui.press(self.path, interval=0.1, presses=1)
 
 if __name__ == "__main__":
     solver = LinkedInZipSolver()

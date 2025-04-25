@@ -23,11 +23,11 @@ def extract_matrix_fast():
     Starts a Chrome WebDriver instance and navigates to the LinkedIn Zip game, extracts the game matrix,
     """
     # Uncomment the following lines to use a specific user profile
-    # user_profile_path = os.path.expanduser("~\\AppData\\Local\\Google\\Chrome\\User Data")
+    user_profile_path = os.path.expanduser("~\\AppData\\Local\\Google\\Chrome\\User Data")
     options = webdriver.ChromeOptions()
 
-    # options.add_argument(f"--user-data-dir={user_profile_path}")
-    # options.add_argument("--profile-directory=Default")
+    options.add_argument(f"--user-data-dir={user_profile_path}")
+    options.add_argument("--profile-directory=Default")
     driver = webdriver.Chrome(options=options)
     # Go to LinkedIn Zip game
     driver.get("https://www.linkedin.com/games/zip")
@@ -58,12 +58,16 @@ def extract_matrix_fast():
         return Array.from(document.querySelectorAll(".trail-cell")).map(cell => {
             const cls = cell.className;
             const txt = cell.querySelector(".trail-cell-content");
+            const border_top = cell.querySelector(".trail-cell-wall--up");
+            const border_down = cell.querySelector(".trail-cell-wall--down");
+            const border_left = cell.querySelector(".trail-cell-wall--left");
+            const border_right = cell.querySelector(".trail-cell-wall--right");
             return {
                 val:  txt ? parseInt(txt.textContent.trim()) || 0 : 0,
-                b_u:  /border-top/.test(cls),
-                b_d:  /border-bottom/.test(cls),
-                b_l:  /border-left/.test(cls),
-                b_r:  /border-right/.test(cls)
+                b_u:  border_top ? 1 : 0,
+                b_d:  border_down ? 1 : 0,
+                b_l:  border_left ? 1 : 0,
+                b_r:  border_right ? 1 : 0,
             };
         });
     """)
@@ -80,6 +84,18 @@ def extract_matrix_fast():
                 start_i, start_j = i, j
             row.append(Node(cell["val"], cell["b_u"], cell["b_d"], cell["b_l"], cell["b_r"]))
         matrix.append(row)
+
+    # Adjust walls
+    for i in range(n):
+        for j in range(n):
+            if i > 0 and matrix[i][j].b_u:
+                matrix[i-1][j].b_d = True
+            if i < n and matrix[i][j].b_d:
+                matrix[i+1][j].b_u = True
+            if j > 0 and matrix[i][j].b_l:
+                matrix[i][j-1].b_r = True
+            if j < n and matrix[i][j].b_r:
+                matrix[i][j+1].b_l = True
 
     return driver, matrix, start_i, start_j, n
 
