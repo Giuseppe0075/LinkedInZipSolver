@@ -4,6 +4,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+
 
 class Node:
     def __init__(self, value: int, b_u: bool, b_d: bool, b_l: bool, b_r: bool):
@@ -22,10 +24,9 @@ def extract_matrix_fast():
     """
     Starts a Chrome WebDriver instance and navigates to the LinkedIn Zip game, extracts the game matrix,
     """
+    options = webdriver.ChromeOptions()
     # Uncomment the following lines to use a specific user profile
     user_profile_path = os.path.expanduser("~\\AppData\\Local\\Google\\Chrome\\User Data")
-    options = webdriver.ChromeOptions()
-
     options.add_argument(f"--user-data-dir={user_profile_path}")
     options.add_argument("--profile-directory=Default")
     driver = webdriver.Chrome(options=options)
@@ -36,11 +37,24 @@ def extract_matrix_fast():
         EC.presence_of_element_located((By.TAG_NAME, "iframe"))
     )
     driver.maximize_window()
-    iframe = driver.find_element(By.TAG_NAME, "iframe")
-    driver.switch_to.frame(iframe)
+
+    driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
+    driver.execute_script("document.body.click();")
+
+    if len(options.arguments) == 0 :
+        iframe = driver.find_element(By.TAG_NAME, "iframe")
+        driver.switch_to.frame(iframe)
     # Wait for the game to load
     print("Waiting for game...")
-    wait = WebDriverWait(driver, 20)
+    # Dopo essere entrato nell'iframe
+    WebDriverWait(driver, 10).until(
+        EC.invisibility_of_element_located((By.CLASS_NAME, "artdeco-modal"))
+    )
+
+    main = WebDriverWait(driver, 20).until(
+        EC.presence_of_element_located((By.TAG_NAME, "main"))
+    )
+    wait = WebDriverWait(main, 20)
     button = wait.until(
         EC.element_to_be_clickable((By.ID, "launch-footer-start-button"))
     )

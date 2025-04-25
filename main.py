@@ -75,5 +75,5 @@ if __name__ == "__main__":
     solver.solve(solver.start_i, solver.start_j)
     solver.solve_puzzle()
     print("Path:", solver.path)
-    time.sleep(3)
+    solver.driver.implicitly_wait(5)
     solver.driver.quit()
